@@ -152,7 +152,7 @@ def split_t_v(dfoff,weekdaycols):
     x_train,y_train = train[original_feature],train.label
     x_test,y_test = valid[original_feature],valid.label
     
-    return x_train,y_train,x_test,y_test
+    return x_train,y_train,x_test,y_test,train,valid
 
 if __name__ == "__main__":
     dfoff = pd.read_csv('../data/ccf_offline_stage1_train.csv')
