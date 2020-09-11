@@ -5,6 +5,7 @@
 
 
 # 包括打标签、训练集和测试集的划分
+# td = pd.to_datetime(dfoff['Date'], format='%Y%m%d') -  pd.to_datetime(dfoff['Date_received'], format='%Y%m%d'),后续单独成为一个函数
 
 
 # In[9]:
@@ -162,4 +163,4 @@ if __name__ == "__main__":
     dfoff,weekdaycols = preprocess.preprocess(dfoff)
     dftest,weekdaycols = preprocess.preprocess(dftest)
     # 分割测试子集和训练子集
-    x_train,y_train,x_test,y_test = preprocess.split_t_v(dfoff,weekdaycols)
+    x_train,y_train,x_test,y_test,train,valid = preprocess.split_t_v(dfoff,weekdaycols)
