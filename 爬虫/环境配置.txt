@@ -1,0 +1,5 @@
+安装selenium，详见 https://www.jb51.net/article/162905.htm
+或者https://zhuanlan.zhihu.com/p/141608593
+	https://www.chromedownloads.net/chrome64win-stable/
+	http://chromedriver.storage.googleapis.com/index.html
+
