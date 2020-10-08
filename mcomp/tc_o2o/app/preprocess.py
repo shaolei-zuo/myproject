@@ -10,10 +10,12 @@
 
 # In[9]:
 
-
+import fileio
 import pandas as pd
 import numpy as np
 from datetime import date
+from sklearn.impute import SimpleImputer
+
 
 # 特征处理
 #1将满xx减yy类型(xx:yy)的券变成折扣率 : 1 - yy/xx，同时建立折扣券相关的特征 discount_rate, discount_man, discount_jian, discount_type
@@ -120,7 +122,19 @@ def get_label(dfoff,off=True):
         dfoff['label'] = dfoff.apply(get_on_label, axis = 1)
     return dfoff
 
-
+def merge_nf1(df):
+    """
+    输入dftest或者dfoff,用于合并新特征1.
+    新特征是使用dfoff的用户id计算的，所以对于其余df可能无法完全兼容，比如dftest会多两个id没有历史数据
+    这里会用most填充
+    """
+    dfnf1 = fileio.read_nf1()
+    dfobj = pd.merge(df,dfnf1,'left',left_on='User_id',right_on='用户id')
+    
+    imp_most = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+    dfobj.iloc[:,-6::] = imp_most.fit_transform(dfobj.iloc[:,-6::])
+    
+    return dfobj
 # In[29]:
 
 
@@ -128,8 +142,18 @@ def preprocess(dfoff):
     dfoff = process_manjian(dfoff)
     dfoff = process_distance(dfoff)
     dfoff,weekdaycols = process_Weekday(dfoff)
+    dfoff = merge_nf1(dfoff)
     
     return dfoff,weekdaycols
+
+
+
+
+def get_last_features(weekdaycols):
+    """获取最终用于模型的特征"""
+    lastfeatures = ['discount_rate','discount_type','discount_man', 'discount_jian','Distance', 'weekday', 'weekday_type'] + weekdaycols
+    lastfeatures = lastfeatures +['只领券', '核销数', '直接买', '单商铺最大购买次数', '成交商家数']
+    return lastfeatures
 
 
 def split_t_v(dfoff,weekdaycols):
@@ -149,9 +173,10 @@ def split_t_v(dfoff,weekdaycols):
     train = dfall[(dfall['Date_received'] < 20160516)].copy()
     valid = dfall[(dfall['Date_received'] >= 20160516) & (dfall['Date_received'] <= 20160615)].copy()
     
-    original_feature = ['discount_rate','discount_type','discount_man', 'discount_jian','Distance', 'weekday', 'weekday_type'] + weekdaycols
-    x_train,y_train = train[original_feature],train.label
-    x_test,y_test = valid[original_feature],valid.label
+    lastfeatures = get_last_features(weekdaycols)
+    x_train,y_train = train[lastfeatures],train.label
+    x_test,y_test = valid[lastfeatures],valid.label
+
     
     return x_train,y_train,x_test,y_test,train,valid
 
@@ -160,7 +185,7 @@ if __name__ == "__main__":
     dftest = pd.read_csv('../data/ccf_offline_stage1_test_revised.csv')
     dfon = pd.read_csv('../data/ccf_online_stage1_train.csv')
     # 预处理，部分特征处理
-    dfoff,weekdaycols = preprocess.preprocess(dfoff)
-    dftest,weekdaycols = preprocess.preprocess(dftest)
+    dfoff,weekdaycols = preprocess(dfoff)
+    dftest,weekdaycols = preprocess(dftest)
     # 分割测试子集和训练子集
-    x_train,y_train,x_test,y_test,train,valid = preprocess.split_t_v(dfoff,weekdaycols)
+    x_train,y_train,x_test,y_test,train,valid = split_t_v(dfoff,weekdaycols)
