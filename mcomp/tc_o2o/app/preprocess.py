@@ -1,14 +1,8 @@
 #!/usr/bin/env python
 # coding: utf-8
 
-# In[ ]:
-
-
 # 包括打标签、训练集和测试集的划分
 # td = pd.to_datetime(dfoff['Date'], format='%Y%m%d') -  pd.to_datetime(dfoff['Date_received'], format='%Y%m%d'),后续单独成为一个函数
-
-
-# In[9]:
 
 import fileio
 import pandas as pd
@@ -20,6 +14,10 @@ from sklearn.impute import SimpleImputer
 # 特征处理
 #1将满xx减yy类型(xx:yy)的券变成折扣率 : 1 - yy/xx，同时建立折扣券相关的特征 discount_rate, discount_man, discount_jian, discount_type
 #2将距离 str 转为 int convert Discount_rate and Distance
+
+##############################################
+#处理满减
+##############################################
 def process_manjian(df):
     
     def getDiscountType(row):
@@ -63,6 +61,9 @@ def process_manjian(df):
     
     return df 
 
+##############################################
+#处理距离
+##############################################
 def process_distance(df):    
     #2将距离 str 转为 int convert Discount_rate and Distance
     df['Distance'] = df['Distance'].fillna(2).astype(int)
@@ -72,7 +73,9 @@ def process_distance(df):
 
 # In[27]:
 
-
+##############################################
+#处理周末
+##############################################
 def process_Weekday(dfoff):
     
     def getWeekday(row):
@@ -95,33 +98,11 @@ def process_Weekday(dfoff):
     return dfoff,weekdaycols
 
 
-# In[28]:
 
 
-def get_label(dfoff,off=True):
-    """线下数据off=True,线上数据dfoff=False,因为线上有fix字段"""
-    
-    def get_off_label(row):
-        """无券-1；有券且15天内消费1；其他0（包括有券不消费、有券15天后消费）"""
-        if pd.isnull(row['Date_received']):
-            return -1
-        if pd.notnull(row['Date']):
-            td = pd.to_datetime(row['Date'], format='%Y%m%d') -  pd.to_datetime(row['Date_received'], format='%Y%m%d')
-            if td <= pd.Timedelta(15, 'D'):
-                return 1
-        return 0
-    
-    def get_on_label(row):
-        print('还没写，等搞清楚fixed和label的关系再说')
-        pass
-    
-
-    if off:
-        dfoff['label'] = dfoff.apply(get_off_label, axis = 1)
-    else:
-        dfoff['label'] = dfoff.apply(get_on_label, axis = 1)
-    return dfoff
-
+##############################################
+#处理nf1
+##############################################
 def merge_nf1(df):
     """
     输入dftest或者dfoff,用于合并新特征1.
@@ -147,13 +128,57 @@ def preprocess(dfoff):
     return dfoff,weekdaycols
 
 
+##############################################
+#处理标签
+##############################################
+def get_label(dfoff,off=True):
+    """线下数据off=True,线上数据dfoff=False,因为线上有fix字段"""
+    
+    def get_off_label(row):
+        """无券-1；有券且15天内消费1；其他0（包括有券不消费、有券15天后消费）"""
+        if pd.isnull(row['Date_received']):
+            return -1
+        if pd.notnull(row['Date']):
+            td = pd.to_datetime(row['Date'], format='%Y%m%d') -  pd.to_datetime(row['Date_received'], format='%Y%m%d')
+            if td <= pd.Timedelta(15, 'D'):
+                return 1
+        return 0
+    
+    def get_on_label(row):
+        print('还没写，等搞清楚fixed和label的关系再说')
+        pass
+    
 
+    if off:
+        dfoff['label'] = dfoff.apply(get_off_label, axis = 1)
+    else:
+        dfoff['label'] = dfoff.apply(get_on_label, axis = 1)
+    return dfoff
+
+##############################################
+#最终特征提取
+##############################################
 
 def get_last_features(weekdaycols):
     """获取最终用于模型的特征"""
     lastfeatures = ['discount_rate','discount_type','discount_man', 'discount_jian','Distance', 'weekday', 'weekday_type'] + weekdaycols
     lastfeatures = lastfeatures +['只领券', '核销数', '直接买', '单商铺最大购买次数', '成交商家数']
     return lastfeatures
+
+
+##############################################
+#分割测试和训练集
+##############################################
+def split_receivetime(dfall,spline = 20160516):
+    """
+    输入dfoff（或类似的），根据自带的Date_received特征，将数据集分割为两部分
+    分割默认为20160516
+    """
+    train = dfall[(dfall['Date_received'] < 20160516)].copy()
+    valid = dfall[(dfall['Date_received'] >= 20160516) & (dfall['Date_received'] <= 20160615)].copy()
+    
+    return train,valid
+    
 
 
 def split_t_v(dfoff,weekdaycols):
@@ -170,8 +195,8 @@ def split_t_v(dfoff,weekdaycols):
     #dfall_X, dfall_y = model_smote.fit_sample(dfall.drop(['label','Discount_rate'],axis = 1),dfall.label)  # 输入数据并作过抽样处理
     #dfall = pd.concat([dfall_X,dfall_y],axis=1)
     
-    train = dfall[(dfall['Date_received'] < 20160516)].copy()
-    valid = dfall[(dfall['Date_received'] >= 20160516) & (dfall['Date_received'] <= 20160615)].copy()
+    train,valid = split_receivetime(dfall)
+
     
     lastfeatures = get_last_features(weekdaycols)
     x_train,y_train = train[lastfeatures],train.label
@@ -180,12 +205,10 @@ def split_t_v(dfoff,weekdaycols):
     
     return x_train,y_train,x_test,y_test,train,valid
 
-if __name__ == "__main__":
-    dfoff = pd.read_csv('../data/ccf_offline_stage1_train.csv')
-    dftest = pd.read_csv('../data/ccf_offline_stage1_test_revised.csv')
-    dfon = pd.read_csv('../data/ccf_online_stage1_train.csv')
-    # 预处理，部分特征处理
-    dfoff,weekdaycols = preprocess(dfoff)
-    dftest,weekdaycols = preprocess(dftest)
-    # 分割测试子集和训练子集
-    x_train,y_train,x_test,y_test,train,valid = split_t_v(dfoff,weekdaycols)
+#if __name__ == "__main__":
+#    dfoff ,dftest,dfon = fileio.read_all()
+#    # 预处理，部分特征处理
+#    dfoff,weekdaycols = preprocess(dfoff)
+#    dftest,weekdaycols = preprocess(dftest)
+#    # 分割测试子集和训练子集
+#    x_train,y_train,x_test,y_test,train,valid = split_t_v(dfoff,weekdaycols)

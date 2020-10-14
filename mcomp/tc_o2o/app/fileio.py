@@ -21,8 +21,12 @@ def read_all():
     dfon = pd.read_csv(star_file+'data/ccf_online_stage1_train.csv')
     return dfoff,dftest,dfon
 
-def read_nf1():
-    df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f1/new_fea_1.csv')
+def read_nf1(offed = True):
+    """现在可以读取另一个文件，默认是读取分割后的那份"""
+    if offed:
+        df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f1/new_fea_1_offdeceived.csv')
+    else:
+        df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f1/new_fea_1.csv')
     return df
 
 if __name__ == "__main__":
