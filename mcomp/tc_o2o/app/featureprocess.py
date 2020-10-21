@@ -115,7 +115,7 @@ def merge_nf2(df):
     dfobj = pd.merge(df,dfnf2,'left',left_on='UM_id',right_on='用户id')
     
     imp_most = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
-    dfobj.iloc[:,-6::] = imp_most.fit_transform(dfobj.iloc[:,-6::])
+    dfobj.iloc[:,-5::] = imp_most.fit_transform(dfobj.iloc[:,-5::])
     
     return dfobj
 
