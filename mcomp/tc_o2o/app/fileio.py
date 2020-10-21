@@ -29,5 +29,13 @@ def read_nf1(offed = True):
         df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f1/new_fea_1.csv')
     return df
 
+def read_nf2(offed = True):
+    """现在可以读取另一个文件，默认是读取分割后的那份"""
+    if offed:
+        df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f2/new_fea_2_offdeceived.csv')
+    else:
+        df = pd.read_csv(star_file+'storage/newfeatures/dfoff_add_f2/new_fea_2.csv')
+    return df
+
 if __name__ == "__main__":
     read_all()

@@ -102,12 +102,28 @@ def merge_nf1(df):
     return dfobj
 
 
+#处理nf2
+def merge_nf2(df):
+    """
+    输入dftest或者dfoff,用于合并新特征1.
+    新特征是使用dfoff的用户id计算的，所以对于其余df可能无法完全兼容，比如dftest会多两个id没有历史数据
+    这里会用most填充
+    """
+    
+    df.loc[:,'UM_id'] = df.User_id.astype('str')+'_'+df.Merchant_id.astype('str')
+    dfnf2 = fileio.read_nf2()
+    dfobj = pd.merge(df,dfnf2,'left',left_on='UM_id',right_on='用户id')
+    
+    imp_most = SimpleImputer(missing_values=np.nan, strategy='most_frequent')
+    dfobj.iloc[:,-6::] = imp_most.fit_transform(dfobj.iloc[:,-6::])
+    
+    return dfobj
 
 def process_features_main(dfoff):
     dfoff = process_manjian(dfoff)
     dfoff = process_distance(dfoff)
     dfoff = process_Weekday(dfoff)
-    dfoff = merge_nf1(dfoff)
-    
+    #dfoff = merge_nf1(dfoff)
+    dfoff = merge_nf2(dfoff)
     return dfoff
 

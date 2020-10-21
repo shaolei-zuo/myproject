@@ -39,6 +39,7 @@ def split_receivetime(dfall,spline = 20160516):
     """
     输入dfoff（或类似的），根据自带的Date_received特征，将数据集分割为两部分
     分割默认为20160516
+    注意这里会自动将‘Data_received’为nan的列删除，也就是label为-1，不领券直接买的人
     """
     train = dfall[(dfall['Date_received'] < 20160516)].copy()
     valid = dfall[(dfall['Date_received'] >= 20160516) & (dfall['Date_received'] <= 20160615)].copy()
