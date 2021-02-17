@@ -8,6 +8,7 @@
 from scrapy import signals
 import base64
 import random
+import scrapy
 
 
 class DoubanSpiderMiddleware(object):
@@ -107,11 +108,17 @@ class DoubanDownloaderMiddleware(object):
 
 class my_proxy(object):
     """自己买代理,并设置随机代理ip,教程用的啊布云"""
+    #def process_request(self, request, spider):
+    #    request.meta['Proxy'] ='http-cla.abuyun.com:9030'
+    #    proxy_name_pass = b'H211EATS905745KC:F8FFBC929EB7D5A7'
+    #    encode_pass_name = base64.b64encode(proxy_name_pass)
+    #    request.headers['proxy-Authorization'] = 'Basic '+encode_pass_name.decode()
     def process_request(self, request, spider):
-        request.meta['Proxy'] ='http-cla.abuyun.com:9030'
-        proxy_name_pass = b'H211EATS905745KC:F8FFBC929EB7D5A7'
-        encode_pass_name = base64.b64encode(proxy_name_pass)
-        request.headers['proxy-Authorization'] = 'Basic '+encode_pass_name.decode()
+        cc = scrapy.Request('https://www.baidu.com')
+        print('happend------------------')
+        print(cc.response.text)
+
+
 
 class my_useragent(object):
     def process_request(self, request, spider):
@@ -154,3 +161,24 @@ class my_useragent(object):
         request.headers['User-Agent'] = agent
 
 
+import  urllib
+
+def myip_query():
+    """查询ip"""
+    url = 'https://proxy.qg.net/query?Key=984D064M'
+    cc = urllib.request.urlopen(url).read()
+    return  cc
+
+def myip_allocate():
+    """申请ip"""
+    url = 'https://proxy.qg.net/allocate?Key=984D064M'
+    cc = urllib.request.urlopen(url).read()
+    return cc
+
+def myip_release():
+    """释放ip"""
+    url = 'https://proxy.qg.net/release?Key=984D064M'
+    cc = urllib.request.urlopen(url).read()
+    return cc
+
+# 维护一个ip列表，随机抽取一个，验证【没有被释放，而且百度能通】，如果成功交出去，不成功去掉。如果列表的ip数量较低
