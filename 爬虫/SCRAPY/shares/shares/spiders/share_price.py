@@ -5,7 +5,8 @@ from shares.db import MongoClient
 from shares.geturls  import getStartUrls
 from shares.geturls import getfullurls
 from shares.logg import  logging
-
+import time
+import random
 
 class SharePriceSpider(scrapy.Spider):
     """先获取股票代码-日期解析确定有数据，以及得到总页数后，得到整个完整的网址"""
@@ -70,6 +71,11 @@ class SharePriceSpider(scrapy.Spider):
 
 #   先解析总页数，并生成最后一层url
     def parse(self, response):
+        time.sleep(random.randint(15, 25))
+        old_urls_list = []
+        sl = MongoClient()
+        old_urls_list = sl.get_scrapyed_url('tempdb', 'had_scrapy_urls')
+
         if '输入的代码有误或没有交易数据' in response.text:
             thislog = response.url+'输入的代码有误或没有交易数据'+'\n'
             ifgoon = False
@@ -78,8 +84,8 @@ class SharePriceSpider(scrapy.Spider):
             thislog = response.url+'——ok'+'\n'
             ifgoon = True
 
-        with open('urllog.txt', 'a+') as f:
-            f.write(thislog)
+        logging(thislog)
+
         if not ifgoon:
             print('*'*50, '当天无数据退出')
             return
@@ -87,9 +93,12 @@ class SharePriceSpider(scrapy.Spider):
         # 获取了
         full_urllist = getfullurls(response.url, page_list)
         for url in full_urllist:
-            yield scrapy.Request(url, callback=self.parse2)
+            '''这里加重复判断'''
+            if url not in old_urls_list:
+                yield scrapy.Request(url, callback=self.parse2)
 
     def parse2(self, response):
+        time.sleep(random.randint(15, 25))
         thislog = 'start run--{0}\n'.format(response.url)
         print('*'*50, thislog)
         logging(thislog)
@@ -106,7 +115,10 @@ class SharePriceSpider(scrapy.Spider):
         data = re.findall('<tr ><th>(.+?)</th><td>(.+?)</td><td>(.+?)</td><td>(.+?)</td><td>(.+?)</td><th><h[56]>(.+?)</h[56]></th></tr>', response.text)
         data = [{'date': date, 'time': i[0], '成交价': i[1], '价格变动': i[2], '成交量（手）':i[3], '成交额（元）':i[4], '性质':i[5]} for i in data]
         conn = MongoClient()
+        # 把目标数据存进数据库
         conn.insert_data_many(data, dbname, sheetname)
+        # 把爬过的url存进数据库
+        conn.insert_data_one({'url': response.url}, 'tempdb', 'had_scrapy_urls')
         thislog = '--{0}数据储存完成\n'.format(response.url)
         logging(thislog)
         return
