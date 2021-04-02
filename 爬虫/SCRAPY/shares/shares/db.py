@@ -20,6 +20,11 @@ class MongoClient(object):
         self.db = self.client[dbname]
         self.collection = self.db[sheetname]
 
+    def show_sheets(self, dbname):
+        self.db = self.client[dbname]
+        collist = self.db.list_collection_names()
+        return collist
+
     def get_scrapyed_url(self, dbname, sheetname):
         '''
         从数据库获取已经爬取过的url
@@ -35,9 +40,10 @@ class MongoClient(object):
 
 if __name__ == '__main__':
     sl = MongoClient()
-    data = sl.get_scrapyed_url('tempdb', 'had_scrapy_urls')
-    if 'http://market.finance.sina.com.cn/transHis.php?symbol=sz000001&date=2008-01-04&page=38' in data:
-        print('yes!')
+    # data = sl.get_scrapyed_url('tempdb', 'had_scrapy_urls')
+    # if 'http://market.finance.sina.com.cn/transHis.php?symbol=sz000001&date=2008-01-04&page=38' in data:
+    #     print('yes!')
+    print(sl.show_sheets('tempdb'))
 
 
 

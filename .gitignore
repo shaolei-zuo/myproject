@@ -7,4 +7,5 @@
 /others
 *资料/
 *urllog.txt
-
+*workspace.xml
+*.idea/

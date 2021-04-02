@@ -4,7 +4,7 @@ import os
 print(os.getcwd())
 sys.path.append('../../../')
 from  app import  time_relevent as tr
-
+from shares.db import MongoClient
 class getStartUrls(object):
     """
     构造startlist列表
@@ -21,6 +21,7 @@ class getStartUrls(object):
         返回'输入的代码有误或没有交易数据'可能是拒绝，也可能放假没有数据
 
         """
+        o_list = []
         def tranhisurl(symbol, date):
             """
             构造开盘价的获取url
@@ -33,6 +34,12 @@ class getStartUrls(object):
         et = self.et
         date_list = [tr.u2b(i, timeformat='%Y-%m-%d') for i in tr.earthworm(st, et)]
         url_list = [tranhisurl(self.symbol, date) for date in date_list]
+
+        # 根据数据库的网址去重
+        conn = MongoClient()
+        if 'had_scrapy_urls_parse' in conn.show_sheets('tempdb'):
+            o_list = conn.get_scrapyed_url('tempdb', 'had_scrapy_urls_parse')
+            url_list = [i for i in url_list if i not in o_list]
 
         self.url_list = url_list
 

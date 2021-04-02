@@ -71,13 +71,16 @@ class SharePriceSpider(scrapy.Spider):
 
 #   先解析总页数，并生成最后一层url
     def parse(self, response):
-        time.sleep(random.randint(15, 25))
+        time.sleep(random.randint(5, 10))
         old_urls_list = []
         sl = MongoClient()
         old_urls_list = sl.get_scrapyed_url('tempdb', 'had_scrapy_urls')
 
         if '输入的代码有误或没有交易数据' in response.text:
             thislog = response.url+'输入的代码有误或没有交易数据'+'\n'
+            # 没有交易数据，存进库
+            conn = MongoClient()
+            conn.insert_data_one({'url': response.url}, 'tempdb', 'had_scrapy_urls_parse')
             ifgoon = False
         else:
             page_list = re.findall('\[(\d+),\'.+?\',\'.+?\'\]', response.text)
@@ -96,9 +99,13 @@ class SharePriceSpider(scrapy.Spider):
             '''这里加重复判断'''
             if url not in old_urls_list:
                 yield scrapy.Request(url, callback=self.parse2)
+        # 如果子页面全部获取了，那么这个url存进库里
+        conn = MongoClient()
+        conn.insert_data_one({'url': response.url}, 'tempdb', 'had_scrapy_urls_parse')
+
 
     def parse2(self, response):
-        time.sleep(random.randint(15, 25))
+        time.sleep(random.randint(5, 10))
         thislog = 'start run--{0}\n'.format(response.url)
         print('*'*50, thislog)
         logging(thislog)
