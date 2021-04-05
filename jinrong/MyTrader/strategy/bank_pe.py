@@ -1,19 +1,10 @@
-#!/usr/bin/env python
-# -*- encoding: utf-8 -*-
-'''
-@File    :   ma_stratey.py    
-@Contact :   458326291@qq.com
-@License :   (C)Copyright 2017-2018, Liugroup-NLPR-CASIA
-
-@Modify Time        @Author      @Version    @Desciption
-------------      -----------    --------    -----------
-2021/4/2 14:53   shaolei.zuo      1.0         None
-'''
+# 策略： 银行股票，市值前十，市净率低于0.6买入。首次买40%仓位，每跌10%补仓20%
 import data.Stock as st
 import pandas as pd
 import  numpy as np
 import strategy.base as strat
 import matplotlib.pyplot as plt
+
 
 def ma_strategy(data, short_window=5, long_window=20):
     '''
@@ -23,6 +14,8 @@ def ma_strategy(data, short_window=5, long_window=20):
     :param long_window:
     :return:
     '''
+
+    # 是否存在市净率、收盘价
     # 计算技术指标
     data = pd.DataFrame(data)
     data['short_ma'] = data['close'].rolling(window=short_window).mean()
@@ -46,21 +39,23 @@ def ma_strategy(data, short_window=5, long_window=20):
 
     return data
 
-
 if __name__ == '__main__':
-    # 股票列表
-    stocks= ['000001.XSHE', '000858.XSHE', '002594.XSHE']
-    # 存放累积收益率
-    cum_profits = pd.DataFrame()
-    # 循环获取数据
-    for code in stocks:
-        df = st.get_single_price(code, 'daily', '2016-01-01', '2021-01-01')
-        df = ma_strategy(df)
-        cum_profits.loc[:,code] = df['cum_profit'].reset_index(drop=True)
+    # 目标股票代码
+    stocks = st.get_stock_list_all()
+    stock_list = list(stocks[stocks['display_name'].str.contains('银行')].index)
 
-        print('开仓次数：', len(df))
-        print(cum_profits)
-    # print(df[['close','signal', 'profit_pct', 'cum_profit']])
-    print(cum_profits)
-    cum_profits.plot()
-    plt.show()
+    # 容器
+
+    # 目标收盘价以及PE指标
+    for code in stock_list[:1]:
+        print(code)
+        dfprice = st.get_single_price(code, 'daily', '2018-01-02', '2018-01-10')
+        for date in dfprice.index:
+            cc = st.get_single_valuation(code, date, statDate=None)
+            dfprice.loc[date, 'pb_ratio'] = cc.pb_ratio[0]
+            dfprice.loc[date, 'market_cap'] = cc.market_cap[0]
+        #dffina = st.get_single_valuation(code, None, statDate='2016')
+    print(dfprice)
+
+
+

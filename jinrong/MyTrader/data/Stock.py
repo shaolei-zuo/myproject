@@ -32,9 +32,15 @@ def init_db():
         df = get_single_price(code, 'daily')
         export_data(df, code, 'price')
 
+
 def get_stock_list():
     '''获取所有A股股票列表'''
     stock_list = list(get_all_securities(['stock']).index)
+    return stock_list
+
+def get_stock_list_all():
+    '''获取所有A股股票列表'''
+    stock_list = get_all_securities(['stock'])
     return stock_list
 
 def get_single_price(code, time_freq, start_date=None, end_date=None):
@@ -47,7 +53,7 @@ def get_single_price(code, time_freq, start_date=None, end_date=None):
     :return:
     '''
     # 如果start_date = None, 默认从上市开始
-    if   start_date is None:
+    if  start_date is None:
         start_date = get_security_info(code).start_date
     if end_date is None:
         end_date = datetime.datetime.today()

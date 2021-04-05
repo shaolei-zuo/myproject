@@ -2,7 +2,7 @@
 <module type="PYTHON_MODULE" version="4">
   <component name="NewModuleRootManager">
     <content url="file://$MODULE_DIR$">
-      <sourceFolder url="file://$MODULE_DIR$/爬虫/proxypool" isTestSource="false" />
+      <sourceFolder url="file://$MODULE_DIR$/爬虫/ProxyPool" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/爬虫" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/爬虫/SCRAPY/tesetIP" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/爬虫/SCRAPY/tesetIP/testIP/testIP" isTestSource="false" />
@@ -10,7 +10,7 @@
       <sourceFolder url="file://$MODULE_DIR$/爬虫/SCRAPY/shares" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/jinrong/MyTrader" isTestSource="false" />
     </content>
-    <orderEntry type="jdk" jdkName="Python 3.6" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="Python 3.7 (scrapy) (2)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="R User Library" level="project" />
     <orderEntry type="library" name="R Skeletons" level="application" />
