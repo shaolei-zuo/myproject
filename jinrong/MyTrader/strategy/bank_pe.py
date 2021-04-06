@@ -5,8 +5,7 @@ import  numpy as np
 import strategy.base as strat
 import matplotlib.pyplot as plt
 
-
-def ma_strategy(data, short_window=5, long_window=20):
+def ba_strategy(data):
     '''
 
     :param data: df必须包含收盘价
@@ -16,6 +15,16 @@ def ma_strategy(data, short_window=5, long_window=20):
     '''
 
     # 是否存在市净率、收盘价
+    columns = data.columns.values
+    print(columns)
+    if  'close' not in data.columns:
+        print('feature \'close\' should in ')
+        return
+    if not 'pa_ratio' in columns:
+        print('feature \'pa_ratio\' should in ')
+        return
+
+    exit()
     # 计算技术指标
     data = pd.DataFrame(data)
     data['short_ma'] = data['close'].rolling(window=short_window).mean()
@@ -44,6 +53,9 @@ if __name__ == '__main__':
     stocks = st.get_stock_list_all()
     stock_list = list(stocks[stocks['display_name'].str.contains('银行')].index)
 
+    print(len(stock_list))
+    exit()
+
     # 容器
 
     # 目标收盘价以及PE指标
@@ -55,7 +67,13 @@ if __name__ == '__main__':
             dfprice.loc[date, 'pb_ratio'] = cc.pb_ratio[0]
             dfprice.loc[date, 'market_cap'] = cc.market_cap[0]
         #dffina = st.get_single_valuation(code, None, statDate='2016')
-    print(dfprice)
+
+    print(dfprice.columns)
+    ba_strategy(dfprice)
+
+    # dfprice.loc[:,['pb_ratio']].plot()
+    # plt.show()
+    #print(dfprice)
 
 
 
