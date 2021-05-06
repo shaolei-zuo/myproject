@@ -32,6 +32,18 @@ def init_db():
         df = get_single_price(code, 'daily')
         export_data(df, code, 'price')
 
+class jijin(object):
+    '''基金相关的内容'''
+    def jijin_normalize_code(self, code):
+        return normalize_code(code)
+
+
+    def jijin_get_price(self, security, start_date=None, end_date=None, frequency='daily',
+                        fields=None, skip_paused=False, fq='pre', count=None):
+        '''df = get_price('510300.XSHG', start_date='2018-08-01 10:00:00', end_date='2018-08-01 10:05:00', frequency='1m')'''
+        return get_price(security, start_date, end_date, frequency,
+                         fields, skip_paused, fq, count)
+
 
 def get_stock_list():
     '''获取所有A股股票列表'''
