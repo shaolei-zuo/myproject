@@ -1,0 +1,7 @@
+<resources>
+    <string name="app_name">learning</string>
+    <string name="message">Send a message</string>
+    <string name="btn">Send</string>
+
+
+</resources>
